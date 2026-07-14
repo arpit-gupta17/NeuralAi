@@ -41,9 +41,9 @@ function TeamMember({ member, index }) {
           whileHover={{ opacity: 1, scale: 1 }}
           className="absolute inset-0 rounded-full bg-black/70 backdrop-blur-sm flex items-center justify-center gap-3 opacity-0 group-hover:opacity-100 transition-all duration-300 z-20"
         >
-          {socialIcons.map(({ Icon, href }) => (
+          {socialIcons.map(({ Icon, href }, i) => (
             <a
-              key={href}
+              key={i}
               href={href}
               className="text-white/60 hover:text-white transition-colors"
             >

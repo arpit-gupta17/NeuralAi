@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import Lenis from 'lenis';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -22,8 +22,18 @@ gsap.registerPlugin(ScrollTrigger);
 export default function App() {
   const [siteReady, setSiteReady] = useState(false);
 
+  const handleLoadComplete = useCallback(() => setSiteReady(true), []);
+
   useEffect(() => {
     if (!siteReady) return;
+
+    // Stop the browser from restoring a previous scroll position (this is
+    // what was causing the page to land a little below the top / "auto
+    // scroll down" right after the loader finished).
+    if ('scrollRestoration' in window.history) {
+      window.history.scrollRestoration = 'manual';
+    }
+    window.scrollTo(0, 0);
 
     const lenis = new Lenis({
       duration: 1.3,
@@ -37,6 +47,17 @@ export default function App() {
     gsap.ticker.add(ticker);
     gsap.ticker.lagSmoothing(0);
 
+    // The loader is `position: fixed`, so while it's on screen the sections
+    // behind it (video, fonts, the 600vh Expertise track, etc.) are still
+    // settling their final layout. Lenis + ScrollTrigger can end up caching
+    // those in-progress measurements. Forcing a hard scroll-to-0 and a
+    // ScrollTrigger.refresh() on the next frame makes sure both start from
+    // the final, fully-rendered page height instead of a stale one.
+    requestAnimationFrame(() => {
+      lenis.scrollTo(0, { immediate: true });
+      ScrollTrigger.refresh();
+    });
+
     return () => {
       lenis.destroy();
       gsap.ticker.remove(ticker);
@@ -46,7 +67,7 @@ export default function App() {
   return (
     <>
       {/* Cinematic Loading intro */}
-      <LoadingScreen onComplete={() => setSiteReady(true)} />
+      <LoadingScreen onComplete={handleLoadComplete} />
 
       {/* Main site — fades in after loading screen exits */}
       <motion.div
@@ -65,9 +86,7 @@ export default function App() {
           {/* Pass siteReady as "started" so Hero's own animations sequence correctly */}
           <Hero started={siteReady} />
 
-          <div className="divider-wipe" />
-          <Expertise />
-
+          
           <div className="divider-wipe" />
           <Projects />
 
