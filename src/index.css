@@ -1,0 +1,225 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800;900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: initial; /* Managed by Lenis */
+    background-color: #050505;
+    color: #f3f4f6;
+    font-family: 'Inter', sans-serif;
+  }
+
+  body {
+    background-color: #050505;
+    margin: 0;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Cinematic film grain overlay */
+  body::after {
+    content: "";
+    position: fixed;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: transparent url('data:image/svg+xml,%3Csvg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"%3E%3Cfilter id="noiseFilter"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="0.75" numOctaves="3" stitchTiles="stitch"/%3E%3C/filter%3E%3Crect width="100%25" height="100%25" filter="url(%23noiseFilter)"/%3E%3C/svg%3E') repeat;
+    opacity: 0.015;
+    pointer-events: none;
+    z-index: 9998;
+    animation: grain 8s steps(10) infinite;
+  }
+
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-track { background: #050505; }
+  ::-webkit-scrollbar-thumb { background: #1a1a28; border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: #26263a; }
+}
+
+/* ── Keyframes ─────────────────────────────────────────────────────────────── */
+@keyframes grain {
+  0%,100% { transform: translate(0,0); }
+  10% { transform: translate(-5%,-10%); }
+  20% { transform: translate(-15%, 5%); }
+  30% { transform: translate( 7%,-15%); }
+  40% { transform: translate(-5%, 15%); }
+  50% { transform: translate(-15%, 10%); }
+  60% { transform: translate(15%, 0%); }
+  75% { transform: translate(0%, 10%); }
+  90% { transform: translate(5%, 5%); }
+}
+
+@keyframes lightSweep {
+  0%   { transform: translateX(-100%) rotate(45deg); }
+  100% { transform: translateX(220%) rotate(45deg); }
+}
+
+@keyframes marquee {
+  0%   { transform: translateX(0%); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes floatY {
+  0%,100% { transform: translateY(0px); }
+  50%     { transform: translateY(-8px); }
+}
+
+/* ── Typography ────────────────────────────────────────────────────────────── */
+.font-display { font-family: 'Outfit', sans-serif; }
+
+/* ── Text Gradients ────────────────────────────────────────────────────────── */
+.text-gradient-blue-purple {
+  background: linear-gradient(135deg, #00f0ff 0%, #9945ff 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.text-gradient-silver {
+  background: linear-gradient(135deg, #ffffff 10%, #a1a1aa 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── Glass Card ─────────────────────────────────────────────────────────────── */
+.glass-card {
+  background: rgba(10, 10, 18, 0.5);
+  backdrop-filter: blur(18px) saturate(180%);
+  -webkit-backdrop-filter: blur(18px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
+}
+
+/* Card lift on hover */
+.glass-card:hover {
+  border-color: rgba(0, 240, 255, 0.18);
+  box-shadow:
+    0 20px 48px rgba(0, 0, 0, 0.6),
+    0 0 0 1px rgba(0, 240, 255, 0.06),
+    0 0 32px rgba(0, 240, 255, 0.04);
+  transform: translateY(-4px);
+}
+
+/* ── Glow Border Sweep ─────────────────────────────────────────────────────── */
+.glow-border {
+  position: relative;
+  overflow: hidden;
+}
+.glow-border::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, rgba(0,240,255,0.4), rgba(153,69,255,0.4));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+.glow-border:hover::after { opacity: 1; }
+
+/* ── Glow Orbs ──────────────────────────────────────────────────────────────── */
+.glow-orb {
+  filter: blur(120px);
+  opacity: 0.18;
+  pointer-events: none;
+  border-radius: 50%;
+  mix-blend-mode: screen;
+}
+
+/* ── Animated Mesh Gradient ─────────────────────────────────────────────────── */
+.mesh-gradient-bg {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(at 10% 20%, rgba(0,240,255,0.10) 0px, transparent 45%),
+    radial-gradient(at 90% 15%, rgba(153,69,255,0.10) 0px, transparent 45%),
+    radial-gradient(at 50% 85%, rgba(0,85,255,0.06) 0px, transparent 50%);
+  filter: blur(40px);
+  pointer-events: none;
+  animation: grain 20s steps(60) infinite;
+}
+
+/* ── Button Light Sweep ─────────────────────────────────────────────────────── */
+.btn-light-sweep {
+  position: relative;
+  overflow: hidden;
+}
+.btn-light-sweep::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 40%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.22), transparent);
+  transform: translateX(-100%);
+  pointer-events: none;
+}
+.btn-light-sweep:hover::before {
+  animation: lightSweep 0.8s ease-in-out forwards;
+}
+
+/* ── Ripple Effect ──────────────────────────────────────────────────────────── */
+.btn-ripple {
+  position: relative;
+  overflow: hidden;
+}
+.btn-ripple::after {
+  content: '';
+  position: absolute;
+  inset: 50%;
+  background: rgba(255,255,255,0.15);
+  border-radius: 50%;
+  transform: scale(0);
+  transition: all 0.6s ease;
+  pointer-events: none;
+}
+.btn-ripple:active::after {
+  inset: -20%;
+  opacity: 0;
+  transform: scale(1);
+}
+
+/* ── Marquee ────────────────────────────────────────────────────────────────── */
+.animate-marquee {
+  display: flex;
+  width: max-content;
+  animation: marquee 35s linear infinite;
+}
+.animate-marquee-paused:hover .animate-marquee {
+  animation-play-state: paused;
+}
+
+/* ── Section Dividers ───────────────────────────────────────────────────────── */
+.divider-wipe {
+  position: relative;
+  height: 1px;
+  background: linear-gradient(to right, transparent, rgba(0,240,255,0.15) 40%, rgba(153,69,255,0.15) 60%, transparent);
+  margin: 0;
+}
+
+/* ── Float Animation ────────────────────────────────────────────────────────── */
+.float-anim {
+  animation: floatY 4s ease-in-out infinite;
+}
+
+/* ── Custom Cursor ──────────────────────────────────────────────────────────── */
+@media (pointer: fine) {
+  .custom-cursor-hide { cursor: none !important; }
+  .custom-cursor-hide a,
+  .custom-cursor-hide button,
+  .custom-cursor-hide input,
+  .custom-cursor-hide select,
+  .custom-cursor-hide textarea,
+  .custom-cursor-hide [role="button"] { cursor: none !important; }
+}
