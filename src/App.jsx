@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useState } from 'react';
 import Lenis from 'lenis';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -7,15 +7,17 @@ import { motion } from 'framer-motion';
 import LoadingScreen from './components/LoadingScreen';
 import CustomCursor from './components/CustomCursor';
 import Navbar from './components/Navbar';
-import Hero from './components/Hero';
-import Expertise from './components/Expertise';
-import Projects from './components/Projects';
-import WhyChooseUs from './components/WhyChooseUs';
-import Process from './components/Process';
-import Testimonials from './components/Testimonials';
-import Team from './components/Team';
-import Contact from './components/Contact';
-import Footer from './components/Footer';
+
+const Hero = lazy(() => import('./components/Hero'));
+const Expertise = lazy(() => import('./components/Expertise'));
+const Projects = lazy(() => import('./components/Projects'));
+const WhyChooseUs = lazy(() => import('./components/WhyChooseUs'));
+const Process = lazy(() => import('./components/Process'));
+const Testimonials = lazy(() => import('./components/Testimonials'));
+const Team = lazy(() => import('./components/Team'));
+const Contact = lazy(() => import('./components/Contact'));
+const Footer = lazy(() => import('./components/Footer'));
+const ScrollStoryEngine = lazy(() => import('./components/ScrollStoryEngine'));
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -58,7 +60,13 @@ export default function App() {
       ScrollTrigger.refresh();
     });
 
+    // Lazy sections mount just after the shell. A form field in a later
+    // section can request focus during that phase and pull the viewport down.
+    // Reassert the landing position after all deferred content has settled.
+    const settleAtHero = window.setTimeout(() => lenis.scrollTo(0, { immediate: true }), 900);
+
     return () => {
+      window.clearTimeout(settleAtHero);
       lenis.destroy();
       gsap.ticker.remove(ticker);
     };
@@ -76,37 +84,24 @@ export default function App() {
         transition={{ duration: 0.7, ease: 'easeOut' }}
         className="custom-cursor-hide bg-[#050505] min-h-screen overflow-x-hidden relative"
       >
-        {/* Persistent mesh gradient background */}
-        <div className="mesh-gradient-bg fixed inset-0 opacity-[0.35] pointer-events-none z-0" />
-
-        <CustomCursor />
-        <Navbar />
-
-        <main className="relative z-10">
-          {/* Pass siteReady as "started" so Hero's own animations sequence correctly */}
-          <Hero started={siteReady} />
-
-          
-          <div className="divider-wipe" />
-          <Projects />
-
-          <div className="divider-wipe" />
-          <WhyChooseUs />
-
-          <div className="divider-wipe" />
-          <Process />
-
-          <div className="divider-wipe" />
-          <Testimonials />
-
-          <div className="divider-wipe" />
-          <Team />
-
-          <div className="divider-wipe" />
-          <Contact />
-        </main>
-
-        <Footer />
+        {siteReady && <Suspense fallback={<div className="site-shell" aria-busy="true" />}>
+          {/* Persistent mesh gradient background */}
+          <div className="mesh-gradient-bg fixed inset-0 opacity-[0.35] pointer-events-none z-0" />
+          <ScrollStoryEngine />
+          <CustomCursor />
+          <Navbar />
+          <main className="relative z-10">
+            <Hero started />
+            <Expertise /><div className="divider-wipe" />
+            <Projects /><div className="divider-wipe" />
+            <WhyChooseUs /><div className="divider-wipe" />
+            <Process /><div className="divider-wipe" />
+            <Testimonials /><div className="divider-wipe" />
+            <Team /><div className="divider-wipe" />
+            <Contact />
+          </main>
+          <Footer />
+        </Suspense>}
       </motion.div>
     </>
   );

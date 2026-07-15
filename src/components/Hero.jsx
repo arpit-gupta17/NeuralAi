@@ -1,16 +1,15 @@
-import { useRef, useState, useEffect } from 'react';
-import { motion, useMotionValue, useSpring, useTransform, AnimatePresence } from 'framer-motion';
+import { useRef } from 'react';
+import { motion, useMotionValue, useSpring, AnimatePresence } from 'framer-motion';
 import { ArrowRight, Play } from 'lucide-react';
-import ThreeCanvas from './ThreeCanvas';
 
 // ─── Word-by-word blur-to-sharp reveal ───────────────────────────────────────
 function BlurWord({ word, delay, className }) {
   return (
     <motion.span
       className={`inline-block ${className}`}
-      initial={{ opacity: 0, filter: 'blur(16px)', y: 24 }}
-      animate={{ opacity: 1, filter: 'blur(0px)', y: 0 }}
-      transition={{ duration: 0.85, delay, ease: [0.16, 1, 0.3, 1] }}
+      initial={{ opacity: 0, filter: 'blur(16px)', y: 28, scale: 0.94 }}
+      animate={{ opacity: 1, filter: 'blur(0px)', y: 0, scale: 1 }}
+      transition={{ duration: 0.86, delay, type: 'spring', stiffness: 145, damping: 16 }}
     >
       {word}
     </motion.span>
@@ -18,10 +17,10 @@ function BlurWord({ word, delay, className }) {
 }
 
 function AnimatedTitle({ started }) {
-  const line1 = ['Building', 'AI'];
-  const line2 = ['Experiences'];
-  const line3 = ['That', 'Feel', 'Like'];
-  const line4 = ['Magic.'];
+  const line1 = ['We', 'Engineer'];
+  const line2 = ['Intelligence'];
+  const line3 = ['For', 'What’s'];
+  const line4 = ['Next.'];
 
   if (!started) return null;
 
@@ -123,58 +122,20 @@ function LightSweep({ started }) {
 
 // ─── Main Hero ────────────────────────────────────────────────────────────────
 export default function Hero({ started }) {
-  const mousePosition = useRef({ x: 0, y: 0 });
-  const mouseX = useMotionValue(0);
-  const mouseY = useMotionValue(0);
-
-  // Very slow, heavily damped springs for background layers
-  const slowSpringX = useSpring(mouseX, { stiffness: 30, damping: 25 });
-  const slowSpringY = useSpring(mouseY, { stiffness: 30, damping: 25 });
-  const fasterSpringX = useSpring(mouseX, { stiffness: 55, damping: 20 });
-  const fasterSpringY = useSpring(mouseY, { stiffness: 55, damping: 20 });
-
-  const orb1X = useTransform(slowSpringX, [-0.5, 0.5], [-55, 55]);
-  const orb1Y = useTransform(slowSpringY, [-0.5, 0.5], [-55, 55]);
-  const orb2X = useTransform(slowSpringX, [-0.5, 0.5], [40, -40]);
-  const orb2Y = useTransform(slowSpringY, [-0.5, 0.5], [40, -40]);
-  const canvasX = useTransform(fasterSpringX, [-0.5, 0.5], [-18, 18]);
-  const canvasY = useTransform(fasterSpringY, [-0.5, 0.5], [-18, 18]);
-
-  const onMouseMove = (e) => {
-    const x = e.clientX / window.innerWidth - 0.5;
-    const y = e.clientY / window.innerHeight - 0.5;
-    mousePosition.current = { x: x * 2, y: y * 2 };
-    mouseX.set(x);
-    mouseY.set(y);
-  };
-
   return (
     <section
       id="home"
-      className="relative min-h-screen flex items-center overflow-hidden bg-black"
-      onMouseMove={onMouseMove}
+      className="hero-cinematic relative h-[100svh] flex items-center overflow-hidden bg-[#03050d]"
     >
-      {/* ── Background ──────────────────────────────── */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
-        <motion.div style={{ x: orb1X, y: orb1Y }}
-          className="glow-orb absolute w-[750px] h-[750px] -top-40 -left-40 bg-cyan-500/10" />
-        <motion.div style={{ x: orb2X, y: orb2Y }}
-          className="glow-orb absolute w-[650px] h-[650px] top-[20%] -right-40 bg-purple-600/10" />
-        <div className="glow-orb absolute w-[500px] h-[500px] -bottom-20 left-[35%] bg-blue-600/5" />
-
-        {/* Grid */}
-        <div className="absolute inset-0 opacity-[0.022]" style={{
-          backgroundImage: 'linear-gradient(rgba(0,240,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(0,240,255,0.5) 1px, transparent 1px)',
-          backgroundSize: '80px 80px',
-        }} />
-      </div>
+      <div className="hero-light-field absolute inset-0 pointer-events-none z-0" aria-hidden="true"><i /><i /><i /><span /></div>
+      <div className="hero-vignette absolute inset-0 pointer-events-none z-[1]" />
 
       {/* ── Light sweep ─────────────────────────────── */}
       <LightSweep started={started} />
 
       {/* ── Content ─────────────────────────────────── */}
-      <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8 w-full pt-28 pb-16">
-        <div className="grid lg:grid-cols-2 gap-12 items-center min-h-[80vh]">
+      <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8 w-full pt-24">
+        <div className="flex items-center min-h-[100svh]">
 
           {/* Left */}
           <div className="flex flex-col gap-6">
@@ -208,8 +169,8 @@ export default function Hero({ started }) {
                   transition={{ duration: 0.9, delay: 1.1, ease: [0.16, 1, 0.3, 1] }}
                   className="text-base sm:text-lg text-white/50 leading-relaxed max-w-lg font-light"
                 >
-                  We design and develop premium AI products, responsive software applications,
-                  workflow automations, and immersive digital platforms.
+                  Neurall builds intelligent products, high-performance software, and digital systems
+                  that make ambitious companies impossible to ignore.
                 </motion.p>
               )}
             </AnimatePresence>
@@ -227,7 +188,7 @@ export default function Hero({ started }) {
                     onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}
                     className="group relative flex items-center gap-2.5 px-8 py-4 rounded-2xl font-display font-semibold text-sm text-black bg-gradient-to-r from-cyan-400 to-purple-500 transition-all duration-300 z-10 btn-light-sweep cursor-pointer overflow-hidden"
                   >
-                    Start Project
+                    Start Your Project
                     <ArrowRight size={16} className="group-hover:translate-x-1.5 transition-transform" />
                   </MagneticButton>
 
@@ -236,7 +197,7 @@ export default function Hero({ started }) {
                     className="group flex items-center gap-2.5 px-8 py-4 rounded-2xl font-display font-semibold text-sm text-white border border-white/10 hover:bg-white/5 hover:border-cyan-400/30 transition-all duration-300 backdrop-blur-md cursor-pointer"
                   >
                     <Play size={13} className="fill-cyan-400 text-cyan-400" />
-                    View Portfolio
+                    Explore Our Work
                   </MagneticButton>
                 </motion.div>
               )}
@@ -251,9 +212,9 @@ export default function Hero({ started }) {
                   transition={{ duration: 1, delay: 1.7 }}
                   className="flex gap-10 mt-6 pt-6 border-t border-white/5"
                 >
-                  {[['100+', 'Projects Built'], ['98%', 'Client Satisfaction'], ['25+', 'Experts Team']].map(([n, l]) => (
+                  {[['★★★★★', 'Trusted by startups'], ['100+', 'Projects built'], ['98%', 'Client satisfaction']].map(([n, l]) => (
                     <div key={l}>
-                      <div className="font-display font-bold text-2xl text-white tracking-tight">{n}</div>
+                      <div className={`font-display font-bold ${n === '★★★★★' ? 'text-sm tracking-[.18em] text-cyan-300' : 'text-2xl'} text-white tracking-tight`}>{n}</div>
                       <div className="text-xs text-white/40 mt-1 font-light tracking-wide">{l}</div>
                     </div>
                   ))}
@@ -262,18 +223,6 @@ export default function Hero({ started }) {
             </AnimatePresence>
           </div>
 
-          {/* Right – 3D Canvas drifts with mouse */}
-          <motion.div
-            style={{ x: canvasX, y: canvasY }}
-            initial={{ opacity: 0, scale: 0.78 }}
-            animate={{ opacity: started ? 1 : 0, scale: started ? 1 : 0.78 }}
-            transition={{ duration: 1.6, delay: 0.9, ease: [0.16, 1, 0.3, 1] }}
-            className="relative w-full h-[450px] lg:h-[600px] flex items-center justify-center"
-          >
-            <ThreeCanvas mousePosition={mousePosition} />
-            <div className="absolute inset-[10%] rounded-full border border-cyan-400/5 animate-spin" style={{ animationDuration: '26s' }} />
-            <div className="absolute inset-[22%] rounded-full border border-purple-500/5 animate-spin" style={{ animationDuration: '18s', animationDirection: 'reverse' }} />
-          </motion.div>
         </div>
       </div>
 

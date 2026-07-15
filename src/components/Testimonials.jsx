@@ -1,121 +1,16 @@
-import { motion } from 'framer-motion';
-import { Star } from 'lucide-react';
+import { useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 
 const testimonials = [
-  {
-    name: 'Sarah Chen',
-    role: 'CTO, Vanta Systems',
-    text: 'NeuralAI completely transformed our data pipeline. The AI models they built reduced our processing time by 80% and the quality was unmatched.',
-    rating: 5,
-    avatar: 'SC',
-  },
-  {
-    name: 'Marcus Rodriguez',
-    role: 'CEO, Apex Digital',
-    text: 'Working with this team was a revelation. They didn\'t just build what we asked — they challenged our thinking and delivered something far better.',
-    rating: 5,
-    avatar: 'MR',
-  },
-  {
-    name: 'Priya Sharma',
-    role: 'Product Lead, Luminary',
-    text: 'The UI they created was absolutely stunning. Our conversion rate jumped 45% after launch. Worth every penny and then some.',
-    rating: 5,
-    avatar: 'PS',
-  },
-  {
-    name: 'James Whitfield',
-    role: 'Founder, NovaTech',
-    text: 'From discovery to launch in 10 weeks. The team\'s ability to move fast without sacrificing quality is genuinely rare in this industry.',
-    rating: 5,
-    avatar: 'JW',
-  },
-  {
-    name: 'Ava Lindström',
-    role: 'Head of Design, Bloom',
-    text: 'The attention to micro-interactions and animation quality set our app apart from every competitor. Our users constantly comment on how premium it feels.',
-    rating: 5,
-    avatar: 'AL',
-  },
-  {
-    name: 'Kevin Park',
-    role: 'VP Engineering, DataFlow',
-    text: 'Their cloud architecture expertise saved us $200K in annual infrastructure costs. Brilliant engineers who deeply understand scalability.',
-    rating: 5,
-    avatar: 'KP',
-  },
+  { name: 'Sarah Chen', role: 'CTO, Vanta Systems', avatar: 'SC', location: 'San Francisco', impact: '80%', metric: 'faster data processing', text: 'Neurall completely transformed our data pipeline. The AI models they built reduced our processing time by 80% and the quality was unmatched.', accent: '#00e5ff' },
+  { name: 'Marcus Rodriguez', role: 'CEO, Apex Digital', avatar: 'MR', location: 'Madrid', impact: '3.4×', metric: 'delivery velocity', text: 'They didn’t just build what we asked — they challenged our thinking and delivered something far better.', accent: '#a970ff' },
+  { name: 'Priya Sharma', role: 'Product Lead, Luminary', avatar: 'PS', location: 'Bengaluru', impact: '45%', metric: 'conversion increase', text: 'The UI they created was absolutely stunning. Our conversion rate jumped 45% after launch.', accent: '#50dfa9' },
+  { name: 'James Whitfield', role: 'Founder, NovaTech', avatar: 'JW', location: 'London', impact: '10 wk', metric: 'idea to launch', text: 'The team’s ability to move fast without sacrificing quality is genuinely rare in this industry.', accent: '#ffad5b' },
+  { name: 'Ava Lindström', role: 'Head of Design, Bloom', avatar: 'AL', location: 'Stockholm', impact: '96', metric: 'experience score', text: 'The attention to micro-interactions and animation quality set our app apart from every competitor.', accent: '#ff79bf' },
+  { name: 'Kevin Park', role: 'VP Engineering, DataFlow', avatar: 'KP', location: 'Seoul', impact: '$200K', metric: 'annual savings', text: 'Their cloud architecture expertise saved us $200K in annual infrastructure costs.', accent: '#5b9dff' },
 ];
 
-// Duplicate for seamless looping
-const allTestimonials = [...testimonials, ...testimonials];
+function TrustNode({ client, index, active, onSelect }) { return <button type="button" onClick={() => onSelect(index)} aria-pressed={active} style={{ '--trust-accent': client.accent, '--node-x': `${[21, 65, 75, 38, 55, 84][index]}%`, '--node-y': `${[30, 23, 55, 66, 38, 72][index]}%` }} className={`trust-node ${active ? 'trust-node--active' : ''}`}><i /><span>{client.location}</span></button>; }
+function Transmission({ client }) { return <motion.article key={client.name} initial={{ opacity: 0, filter: 'blur(10px)', y: 18 }} animate={{ opacity: 1, filter: 'blur(0px)', y: 0 }} exit={{ opacity: 0, y: -10 }} className="trust-transmission" style={{ '--trust-accent': client.accent }}><div className="trust-transmission__bar"><span>INCOMING TRANSMISSION // {client.location.toUpperCase()}</span><i /></div><div className="trust-client"><b>{client.avatar}</b><div><strong>{client.name}</strong><span>{client.role}</span></div><em>★★★★★</em></div><p>“{client.text}”</p><div className="trust-impact"><strong>{client.impact}</strong><span>{client.metric}</span><i /><i /><i /><i /><i /></div></motion.article>; }
 
-function TestimonialCard({ testimonial }) {
-  return (
-    <div className="w-80 flex-shrink-0 glass-card rounded-2xl p-6 mx-3 border border-white/5">
-      {/* Stars */}
-      <div className="flex gap-1 mb-4">
-        {Array.from({ length: testimonial.rating }).map((_, i) => (
-          <Star key={i} size={13} className="fill-yellow-400 text-yellow-400" />
-        ))}
-      </div>
-
-      {/* Quote */}
-      <p className="text-sm text-white/60 leading-relaxed mb-5">
-        "{testimonial.text}"
-      </p>
-
-      {/* Author */}
-      <div className="flex items-center gap-3">
-        <div className="w-9 h-9 rounded-full bg-gradient-to-br from-cyan-400 to-purple-500 flex items-center justify-center flex-shrink-0">
-          <span className="text-xs font-bold text-black">{testimonial.avatar}</span>
-        </div>
-        <div>
-          <div className="text-sm font-semibold text-white">{testimonial.name}</div>
-          <div className="text-xs text-white/40">{testimonial.role}</div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-export default function Testimonials() {
-  return (
-    <section id="testimonials" className="relative py-24 overflow-hidden">
-      <div className="glow-orb absolute w-[500px] h-[500px] top-[10%] left-[20%] bg-cyan-500 pointer-events-none" />
-
-      <div className="max-w-7xl mx-auto px-6 lg:px-8 mb-16">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.3 }}
-          transition={{ duration: 0.7 }}
-          className="text-center"
-        >
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-yellow-500/20 bg-yellow-500/5 mb-4">
-            <span className="text-xs text-yellow-400 tracking-wider uppercase font-medium">Client Voices</span>
-          </div>
-          <h2 className="font-display font-bold text-4xl sm:text-5xl text-white mb-4">
-            What Our <span className="text-gradient-blue-purple">Clients Say</span>
-          </h2>
-          <p className="text-white/50 max-w-xl mx-auto">
-            Don't take our word for it — hear from the teams we've helped transform.
-          </p>
-        </motion.div>
-      </div>
-
-      {/* Infinite Marquee */}
-      <div className="animate-marquee-paused overflow-hidden relative">
-        {/* Fade edges */}
-        <div className="absolute left-0 top-0 bottom-0 w-24 bg-gradient-to-r from-[#050505] to-transparent z-10 pointer-events-none" />
-        <div className="absolute right-0 top-0 bottom-0 w-24 bg-gradient-to-l from-[#050505] to-transparent z-10 pointer-events-none" />
-
-        <div className="animate-marquee">
-          {allTestimonials.map((t, i) => (
-            <TestimonialCard key={`${t.name}-${i}`} testimonial={t} />
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
+export default function Testimonials() { const [active, setActive] = useState(0); const client = testimonials[active]; return <section id="testimonials" className="trust-network relative min-h-[980px] overflow-hidden bg-black py-24"><div className="trust-stars" /><header className="trust-header relative z-10 max-w-7xl mx-auto px-6 lg:px-8"><span>NEURALL / GLOBAL TRUST NETWORK</span><h2>Built with teams <em>everywhere.</em></h2><p>Worldwide systems. Long-term partnerships. Measurable change.</p></header><div className="trust-world relative mx-auto max-w-6xl px-6"><div className="trust-globe"><span className="trust-globe__grid" /><span className="trust-globe__orbit" /><i>GLOBAL<br />NETWORK</i></div><svg className="trust-routes" viewBox="0 0 1000 570" preserveAspectRatio="none" aria-hidden="true"><path d="M500 275Q320 100 210 170M500 275Q650 90 650 130M500 275Q780 210 750 310M500 275Q390 400 380 380M500 275Q560 340 550 220M500 275Q720 420 840 410" /></svg>{testimonials.map((item, index) => <TrustNode key={item.name} client={item} index={index} active={index === active} onSelect={setActive} />)}<AnimatePresence mode="wait"><Transmission client={client} /></AnimatePresence></div><div className="trust-proof"><span><b>100+</b> PROJECTS DELIVERED</span><span><b>98%</b> CLIENT SATISFACTION</span><span><b>24/7</b> GLOBAL SUPPORT</span></div></section>; }

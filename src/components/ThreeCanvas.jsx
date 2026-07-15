@@ -1,135 +1,14 @@
-import { useRef, useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { Points, PointMaterial } from '@react-three/drei';
 import * as THREE from 'three';
 
-function FloatingParticles({ count = 2000 }) {
-  const ref = useRef();
+const ribbonVertex = `uniform float uTime; attribute float aSeed; varying float vFade; varying float vBand; void main(){ vec3 p=position; float wave=sin(p.x*1.12+uTime*.33+aSeed*8.)*.34; wave+=sin(p.x*2.18-uTime*.22+aSeed*13.)*.15; p.y+=wave+sin(p.z*2.+uTime*.28)*.12; p.z+=sin(p.x*.7+uTime*.24+aSeed)*.28; vec4 mv=modelViewMatrix*vec4(p,1.); gl_Position=projectionMatrix*mv; vFade=smoothstep(6.2,1.5,length(p.xy)); vBand=aSeed; }`;
+const ribbonFragment = `uniform float uTime; varying float vFade; varying float vBand; void main(){ vec3 color=mix(vec3(.08,.84,1.),vec3(.48,.20,1.),vBand); float pulse=.68+.32*sin(uTime*.8+vBand*12.); gl_FragColor=vec4(color*pulse,vFade*.18); }`;
+const dustVertex = `uniform float uTime; attribute float aSeed; attribute float aSize; varying float vTint; void main(){ vec3 p=position; float t=uTime*.17+aSeed*20.; p.x+=sin(t+p.y*.7)*.32; p.y+=cos(t*1.3+p.x*.5)*.22; vec4 mv=modelViewMatrix*vec4(p,1.); gl_Position=projectionMatrix*mv; gl_PointSize=aSize*(20./-mv.z)*(1.+sin(t*2.)*.25); vTint=aSeed; }`;
+const dustFragment = `varying float vTint; void main(){ float d=length(gl_PointCoord-.5)*2.; float a=smoothstep(1.,.08,d)*.52; vec3 c=mix(vec3(.25,.92,1.),vec3(.68,.35,1.),vTint); gl_FragColor=vec4(c,a); }`;
 
-  const positions = useMemo(() => {
-    const pos = new Float32Array(count * 3);
-    for (let i = 0; i < count; i++) {
-      const radius = 2.5;
-      const theta = Math.random() * Math.PI * 2;
-      const phi = Math.acos(2 * Math.random() - 1);
-      pos[i * 3] = radius * Math.sin(phi) * Math.cos(theta) * (0.5 + Math.random());
-      pos[i * 3 + 1] = radius * Math.sin(phi) * Math.sin(theta) * (0.5 + Math.random());
-      pos[i * 3 + 2] = radius * Math.cos(phi) * (0.5 + Math.random());
-    }
-    return pos;
-  }, [count]);
-
-  useFrame(({ clock }) => {
-    if (ref.current) {
-      ref.current.rotation.y = clock.getElapsedTime() * 0.05;
-      ref.current.rotation.x = Math.sin(clock.getElapsedTime() * 0.03) * 0.2;
-    }
-  });
-
-  return (
-    <Points ref={ref} positions={positions} stride={3} frustumCulled={false}>
-      <PointMaterial
-        transparent
-        color="#00f0ff"
-        size={0.008}
-        sizeAttenuation
-        depthWrite={false}
-        opacity={0.7}
-      />
-    </Points>
-  );
-}
-
-function WireframeOrb() {
-  const ref = useRef();
-
-  useFrame(({ clock }) => {
-    if (ref.current) {
-      ref.current.rotation.y = clock.getElapsedTime() * 0.12;
-      ref.current.rotation.z = clock.getElapsedTime() * 0.05;
-    }
-  });
-
-  return (
-    <group ref={ref}>
-      <mesh>
-        <icosahedronGeometry args={[1.2, 1]} />
-        <meshBasicMaterial
-          color="#00f0ff"
-          wireframe
-          transparent
-          opacity={0.18}
-        />
-      </mesh>
-      <mesh>
-        <icosahedronGeometry args={[0.9, 2]} />
-        <meshBasicMaterial
-          color="#9945ff"
-          wireframe
-          transparent
-          opacity={0.12}
-        />
-      </mesh>
-    </group>
-  );
-}
-
-function GlowOrb({ position, color, scale = 1 }) {
-  const ref = useRef();
-
-  useFrame(({ clock }) => {
-    if (ref.current) {
-      ref.current.position.y = position[1] + Math.sin(clock.getElapsedTime() * 0.7 + position[0]) * 0.3;
-    }
-  });
-
-  return (
-    <mesh ref={ref} position={position}>
-      <sphereGeometry args={[0.08 * scale, 8, 8]} />
-      <meshBasicMaterial color={color} transparent opacity={0.9} />
-    </mesh>
-  );
-}
-
-function Scene({ mousePosition }) {
-  const groupRef = useRef();
-
-  useFrame(({ clock }) => {
-    if (groupRef.current) {
-      const targetX = mousePosition.current.x * 0.3;
-      const targetY = mousePosition.current.y * 0.2;
-      groupRef.current.rotation.y += (targetX - groupRef.current.rotation.y) * 0.03;
-      groupRef.current.rotation.x += (-targetY - groupRef.current.rotation.x) * 0.03;
-    }
-  });
-
-  return (
-    <group ref={groupRef}>
-      <WireframeOrb />
-      <FloatingParticles />
-      <GlowOrb position={[1.6, 0.3, 0.2]} color="#00f0ff" scale={1.5} />
-      <GlowOrb position={[-1.4, 0.6, -0.3]} color="#9945ff" scale={1.2} />
-      <GlowOrb position={[0.2, 1.8, 0.4]} color="#ffffff" scale={0.8} />
-      <GlowOrb position={[-0.5, -1.6, 0.6]} color="#00f0ff" />
-      <GlowOrb position={[1.2, -1.0, -0.8]} color="#9945ff" scale={0.9} />
-      <ambientLight intensity={0.2} />
-      <pointLight position={[2, 2, 2]} intensity={0.5} color="#00f0ff" />
-      <pointLight position={[-2, -2, -2]} intensity={0.4} color="#9945ff" />
-    </group>
-  );
-}
-
-export default function ThreeCanvas({ mousePosition }) {
-  return (
-    <div className="w-full h-full">
-      <Canvas
-        camera={{ position: [0, 0, 5], fov: 45 }}
-        dpr={[1, 2]}
-        gl={{ antialias: true, alpha: true }}
-        style={{ background: 'transparent' }}
-      >
-        <Scene mousePosition={mousePosition} />
-      </Canvas>
-    </div>
-  );
-}
+function createRibbon(index) { const segments=140, positions=[], seeds=[], width=.018+index*.006, offset=(index-2.5)*.48; for(let i=0;i<segments;i+=1){const x1=-7+i/segments*14,x2=-7+(i+1)/segments*14,y1=offset+Math.sin(i*.18+index)*.08,y2=offset+Math.sin((i+1)*.18+index)*.08;positions.push(x1,y1-width,index*.18,x1,y1+width,index*.18,x2,y2-width,index*.18,x2,y2+width,index*.18);seeds.push(index/5,index/5,index/5,index/5);} const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));g.setAttribute('aSeed',new THREE.Float32BufferAttribute(seeds,1));const indices=[];for(let i=0;i<segments;i+=1){const p=i*4;indices.push(p,p+2,p+1,p+1,p+2,p+3);}g.setIndex(indices);return g; }
+function Ribbons(){const geometries=useMemo(()=>Array.from({length:6},(_,i)=>createRibbon(i)),[]);const materials=useRef([]);useEffect(()=>()=>geometries.forEach(g=>g.dispose()),[geometries]);useFrame(({clock,pointer})=>materials.current.forEach((m,i)=>{if(!m)return;m.uniforms.uTime.value=clock.elapsedTime;m.parent.rotation.y=pointer.x*.08+(i-2.5)*.035;}));return geometries.map((geometry,index)=><mesh key={index} geometry={geometry} rotation={[0,0,(index-2.5)*.11]}><shaderMaterial ref={node=>{materials.current[index]=node;}} transparent depthWrite={false} blending={THREE.AdditiveBlending} vertexShader={ribbonVertex} fragmentShader={ribbonFragment} uniforms={{uTime:{value:0}}}/></mesh>);}
+function Dust(){const geometry=useMemo(()=>{const seed=n=>{const x=Math.sin(n*12.9898)*43758.5453;return x-Math.floor(x);};const count=window.innerWidth<768?600:1500,p=new Float32Array(count*3),s=new Float32Array(count),z=new Float32Array(count);for(let i=0;i<count;i+=1){p[i*3]=(seed(i+1)-.5)*15;p[i*3+1]=(seed(i+201)-.5)*8;p[i*3+2]=(seed(i+401)-.5)*4-1;s[i]=seed(i+601);z[i]=.4+seed(i+801)*1.45;}const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(p,3));g.setAttribute('aSeed',new THREE.BufferAttribute(s,1));g.setAttribute('aSize',new THREE.BufferAttribute(z,1));return g;},[]);const material=useRef();useEffect(()=>()=>geometry.dispose(),[geometry]);useFrame(({clock})=>{material.current.uniforms.uTime.value=clock.elapsedTime;});return <points geometry={geometry} frustumCulled={false}><shaderMaterial ref={material} transparent depthWrite={false} blending={THREE.AdditiveBlending} vertexShader={dustVertex} fragmentShader={dustFragment} uniforms={{uTime:{value:0}}}/></points>}
+function Scene(){useFrame(({camera,pointer})=>{camera.position.x=THREE.MathUtils.lerp(camera.position.x,pointer.x*.34,.02);camera.position.y=THREE.MathUtils.lerp(camera.position.y,pointer.y*.18,.02);camera.lookAt(0,0,0);});return <><Ribbons/><Dust/></>}
+export default function ThreeCanvas(){return <div className="hero-neural-field" aria-hidden="true"><Canvas dpr={[1,1.6]} gl={{antialias:false,alpha:true,powerPreference:'high-performance',toneMapping:THREE.ACESFilmicToneMapping}} camera={{position:[0,0,7],fov:48}}><Scene/></Canvas></div>;}

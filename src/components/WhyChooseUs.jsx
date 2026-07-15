@@ -1,102 +1,38 @@
-import { useEffect, useRef, useState } from 'react';
-import { motion, useInView } from 'framer-motion';
+import { motion } from 'framer-motion';
 
-const stats = [
-  { value: 100, suffix: '+', label: 'Projects Delivered', color: 'from-cyan-400 to-blue-500' },
-  { value: 98, suffix: '%', label: 'Client Satisfaction', color: 'from-purple-400 to-pink-500' },
-  { value: 25, suffix: '+', label: 'Expert Team', color: 'from-emerald-400 to-cyan-500' },
-  { value: 10, suffix: '+', label: 'Countries Served', color: 'from-orange-400 to-red-500' },
+const panels = [
+  { id: 'success', label: 'Project Success', value: '98%', detail: 'Delivered beyond target', type: 'ring', accent: '#00e5ff' },
+  { id: 'world', label: 'Countries Served', value: '10+', detail: 'Connected operating zones', type: 'map', accent: '#a970ff' },
+  { id: 'neural', label: 'AI Performance', value: '99.8', detail: 'Inference reliability', type: 'neural', accent: '#50dfa9' },
+  { id: 'cloud', label: 'Infrastructure', value: '24/7', detail: 'Global system uptime', type: 'cloud', accent: '#5a9dff' },
+  { id: 'security', label: 'Security', value: '0', detail: 'Critical threats passed', type: 'security', accent: '#69e69e' },
+  { id: 'innovation', label: 'Innovation', value: '100+', detail: 'Systems launched', type: 'roadmap', accent: '#ff94c6' },
 ];
 
-function Counter({ value, suffix, color }) {
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, amount: 0.5 });
-  const [count, setCount] = useState(0);
+function Visualization({ type }) {
+  if (type === 'ring') return <div className="cc-ring"><i /><b>98</b></div>;
+  if (type === 'map') return <svg className="cc-map" viewBox="0 0 160 70" aria-hidden="true"><path d="M8 30 29 15l18 4 12-9 18 13 25-3 14 13 25 1 11 14-20 10-23-6-18 7-28-5-20 6-13-14-22-2Z" /><circle cx="38" cy="27" r="2" /><circle cx="84" cy="31" r="2" /><circle cx="123" cy="42" r="2" /><path className="cc-route" d="M38 27Q70 6 84 31T123 42" /></svg>;
+  if (type === 'neural') return <div className="cc-neural">{Array.from({ length: 12 }, (_, i) => <i key={i} style={{ '--x': `${(i % 4) * 31 + 5}px`, '--y': `${Math.floor(i / 4) * 22 + 7}px` }} />)}<svg viewBox="0 0 130 60"><path d="M10 15 43 34 75 12 111 39M10 39 43 34 75 46 111 20" /></svg></div>;
+  if (type === 'cloud') return <div className="cc-cloud"><span>◉</span><i /><i /><i /><b>LOAD · 18%</b></div>;
+  if (type === 'security') return <div className="cc-security"><span>⌁</span><i>SECURE</i><b>ENCRYPTED / ACTIVE</b></div>;
+  return <div className="cc-roadmap"><i /><i /><i /><i /><b>RESEARCH → LAUNCH</b></div>;
+}
 
-  useEffect(() => {
-    if (!isInView) return;
-    let start = 0;
-    const duration = 2000;
-    const step = 20;
-    const increment = value / (duration / step);
-    const timer = setInterval(() => {
-      start += increment;
-      if (start >= value) {
-        setCount(value);
-        clearInterval(timer);
-      } else {
-        setCount(Math.floor(start));
-      }
-    }, step);
-    return () => clearInterval(timer);
-  }, [isInView, value]);
-
-  return (
-    <div ref={ref} className={`font-display font-black text-5xl sm:text-6xl bg-gradient-to-br ${color} bg-clip-text text-transparent`}>
-      {count}{suffix}
-    </div>
-  );
+function Panel({ panel, index }) {
+  return <motion.article tabIndex="0" initial={{ opacity: 0, scale: .7, y: index < 3 ? -28 : 28 }} whileInView={{ opacity: 1, scale: 1, y: 0 }} viewport={{ once: true, amount: .2 }} transition={{ delay: index * .08, type: 'spring', stiffness: 100, damping: 16 }} className={`command-panel command-panel--${panel.id}`} style={{ '--panel-accent': panel.accent }}>
+    <div className="command-panel__top"><span>NODE // {String(index + 1).padStart(2, '0')}</span><i /></div><Visualization type={panel.type} /><div className="command-panel__copy"><span>{panel.label}</span><strong>{panel.value}</strong><small>{panel.detail}</small></div>
+  </motion.article>;
 }
 
 export default function WhyChooseUs() {
-  return (
-    <section id="about" className="relative py-24 overflow-hidden">
-      {/* Decorative lines */}
-      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan-400/20 to-transparent" />
-      <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-purple-400/20 to-transparent" />
-
-      <div className="max-w-7xl mx-auto px-6 lg:px-8">
-        <div className="grid lg:grid-cols-2 gap-16 items-center">
-          {/* Left: Stats */}
-          <motion.div
-            initial={{ opacity: 0, x: -40 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, amount: 0.3 }}
-            transition={{ duration: 0.8 }}
-          >
-            <div className="grid grid-cols-2 gap-8">
-              {stats.map((stat) => (
-                <div key={stat.label} className="glass-card rounded-2xl p-7">
-                  <Counter value={stat.value} suffix={stat.suffix} color={stat.color} />
-                  <div className="mt-2 text-sm text-white/50">{stat.label}</div>
-                </div>
-              ))}
-            </div>
-          </motion.div>
-
-          {/* Right: Text */}
-          <motion.div
-            initial={{ opacity: 0, x: 40 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, amount: 0.3 }}
-            transition={{ duration: 0.8 }}
-          >
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/5 mb-6">
-              <span className="text-xs text-emerald-400 tracking-wider uppercase font-medium">Why Choose Us</span>
-            </div>
-            <h2 className="font-display font-bold text-4xl sm:text-5xl text-white mb-6">
-              We Deliver <span className="text-gradient-blue-purple">Excellence</span>, Every Time
-            </h2>
-            <p className="text-white/50 leading-relaxed mb-8">
-              We combine cutting-edge technology with deep domain expertise to create digital experiences that don't just work — they set new industry benchmarks. Our team is obsessed with quality, performance, and pushing the boundaries of what's possible.
-            </p>
-
-            <div className="space-y-4">
-              {['Pixel-perfect UI/UX execution', 'On-time, within-budget delivery', 'Transparent communication & agile workflow', 'Post-launch support & continuous optimisation'].map((item) => (
-                <div key={item} className="flex items-center gap-3">
-                  <div className="w-5 h-5 rounded-full bg-gradient-to-br from-cyan-400 to-purple-500 flex items-center justify-center flex-shrink-0">
-                    <svg className="w-3 h-3 text-black" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                    </svg>
-                  </div>
-                  <span className="text-sm text-white/65">{item}</span>
-                </div>
-              ))}
-            </div>
-          </motion.div>
-        </div>
-      </div>
-    </section>
-  );
+  return <section id="about" className="command-center relative min-h-[1300px] overflow-hidden bg-black py-24">
+    <div className="command-center__grid" /><div className="command-center__fog" />
+    <header className="command-center__header relative z-10 max-w-7xl mx-auto px-6 lg:px-8"><span>NEURALL / COMMAND CENTER</span><h2>Intelligence, <em>without guesswork.</em></h2><p>Every system is connected. Every decision is visible. Every result is engineered.</p></header>
+    <div className="command-room relative mx-auto mt-8 max-w-7xl px-4 lg:px-8" aria-label="Neurall intelligence command center">
+      <svg className="command-links" viewBox="0 0 1000 730" preserveAspectRatio="none" aria-hidden="true">{[[500,365,180,155],[500,365,500,110],[500,365,820,155],[500,365,180,565],[500,365,500,620],[500,365,820,565]].map(([x1,y1,x2,y2], i) => <path key={i} d={`M${x1} ${y1} Q${(x1+x2)/2} ${(y1+y2)/2-50} ${x2} ${y2}`} />)}</svg>
+      <div className="command-core"><span className="command-core__orbit" /><span className="command-core__orbit command-core__orbit--two" /><b>AI</b><i>NEURALL<br />CORE</i></div>
+      {panels.map((panel, index) => <Panel key={panel.id} panel={panel} index={index} />)}
+    </div>
+    <div className="command-center__footer"><span>LIVE INTELLIGENCE STREAM</span><i /><span>ALL SYSTEMS NOMINAL</span></div>
+  </section>;
 }
-

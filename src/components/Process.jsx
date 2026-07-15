@@ -1,87 +1,25 @@
-import { useRef } from 'react';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { useRef, useState } from 'react';
+import { motion, useMotionValueEvent, useScroll } from 'framer-motion';
 
-const steps = [
-  { number: '01', title: 'Discover', description: 'We dive deep into your goals, challenges, and market. Through structured workshops and user research, we define a clear north star.' },
-  { number: '02', title: 'Design', description: 'Our designers craft pixel-perfect wireframes, interactive prototypes, and a cohesive design system that balances beauty with usability.' },
-  { number: '03', title: 'Develop', description: 'World-class engineers build your product with modern tech stacks, rigorous testing, and a focus on performance and scalability.' },
-  { number: '04', title: 'Launch', description: 'We manage the full deployment pipeline — from CI/CD setup to production monitoring — ensuring a smooth, zero-downtime launch.' },
-  { number: '05', title: 'Scale', description: 'Post-launch, we continuously optimise, add features, and scale your infrastructure to handle growth and evolving user needs.' },
+const stages = [
+  { id: 'discover', number: '01', title: 'Discovery', label: 'Signals become direction', detail: 'Research, users, goals, and opportunity maps become one shared intelligence model.', accent: '#00e5ff', glyph: '◎' },
+  { id: 'strategy', number: '02', title: 'Strategy', label: 'Direction becomes a system', detail: 'A decision engine turns insight into roadmaps, operating models, and measurable next moves.', accent: '#a970ff', glyph: '⌘' },
+  { id: 'design', number: '03', title: 'Design', label: 'Systems become experiences', detail: 'Interfaces assemble from a living design language, testing clarity at every interaction.', accent: '#ff82bf', glyph: '◇' },
+  { id: 'develop', number: '04', title: 'Development', label: 'Experience becomes software', detail: 'Product architecture, APIs, and interfaces compile into a resilient connected platform.', accent: '#55a5ff', glyph: '</>' },
+  { id: 'test', number: '05', title: 'Testing', label: 'Software becomes trusted', detail: 'Automated quality, accessibility, performance, and security checks resolve before launch.', accent: '#62e39c', glyph: '✓' },
+  { id: 'launch', number: '06', title: 'Deployment', label: 'Trusted becomes global', detail: 'Cloud infrastructure wakes up, traffic flows, and continuous observation begins.', accent: '#ffc25d', glyph: '↗' },
 ];
 
-function ProcessStep({ step, index }) {
-  const ref = useRef(null);
-  const { scrollYProgress } = useScroll({ target: ref, offset: ['start 0.8', 'end 0.4'] });
-  const opacity = useTransform(scrollYProgress, [0, 0.3, 1], [0.3, 1, 1]);
-  const x = useTransform(scrollYProgress, [0, 0.4], [index % 2 === 0 ? -30 : 30, 0]);
-
-  return (
-    <motion.div
-      ref={ref}
-      style={{ opacity, x }}
-      className={`flex gap-6 sm:gap-10 items-start ${index % 2 === 0 ? 'sm:flex-row' : 'sm:flex-row-reverse sm:text-right'}`}
-    >
-      {/* Number badge */}
-      <div className="flex-shrink-0">
-        <div className="w-14 h-14 rounded-2xl glass-card border border-white/10 flex items-center justify-center">
-          <span className="font-display font-bold text-sm text-gradient-blue-purple">{step.number}</span>
-        </div>
-      </div>
-
-      {/* Content */}
-      <div className="flex-1 pb-10">
-        <h3 className="font-display font-bold text-xl text-white mb-2">{step.title}</h3>
-        <p className="text-sm text-white/50 leading-relaxed max-w-sm">{step.description}</p>
-      </div>
-    </motion.div>
-  );
+function FactoryVisual({ stage }) {
+  return <div className={`factory-visual factory-visual--${stage.id}`} style={{ '--factory-accent': stage.accent }}>
+    <div className="factory-tunnel"><i /><i /><i /><i /><i /></div><div className="factory-packets">{Array.from({ length: 18 }, (_, index) => <i key={index} style={{ '--packet': index }} />)}</div>
+    <div className="factory-workbench"><div className="factory-workbench__top"><span>NEURALL // {stage.id.toUpperCase()}_SYSTEM</span><i /></div><div className="factory-workbench__content"><b>{stage.glyph}</b><div className="factory-blueprint"><i /><i /><i /><i /><i /><i /></div><div className="factory-terminal"><span>BUILD STATUS</span><strong>{stage.id === 'test' ? 'VERIFIED' : stage.id === 'launch' ? 'GLOBAL' : 'ACTIVE'}</strong><i /><i /><i /></div></div></div>
+  </div>;
 }
 
 export default function Process() {
-  const containerRef = useRef(null);
-  const { scrollYProgress } = useScroll({ target: containerRef, offset: ['start 0.9', 'end 0.2'] });
-  const lineHeight = useTransform(scrollYProgress, [0, 1], ['0%', '100%']);
-
-  return (
-    <section id="process" className="relative py-24 overflow-hidden">
-      <div className="glow-orb absolute w-[400px] h-[400px] top-[30%] right-[-100px] bg-purple-600 pointer-events-none" />
-
-      <div className="max-w-7xl mx-auto px-6 lg:px-8">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.3 }}
-          transition={{ duration: 0.7 }}
-          className="text-center mb-16"
-        >
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-purple-500/20 bg-purple-500/5 mb-4">
-            <span className="text-xs text-purple-400 tracking-wider uppercase font-medium">How We Work</span>
-          </div>
-          <h2 className="font-display font-bold text-4xl sm:text-5xl text-white mb-4">
-            Our <span className="text-gradient-blue-purple">Process</span>
-          </h2>
-          <p className="text-white/50 max-w-xl mx-auto">
-            A battle-tested methodology that consistently delivers extraordinary results.
-          </p>
-        </motion.div>
-
-        <div className="relative max-w-2xl mx-auto" ref={containerRef}>
-          {/* Glowing vertical timeline line */}
-          <div className="absolute left-7 top-0 bottom-0 w-px bg-white/5">
-            <motion.div
-              className="absolute top-0 left-0 w-full bg-gradient-to-b from-cyan-400 to-purple-500 rounded-full"
-              style={{ height: lineHeight }}
-            />
-          </div>
-
-          <div className="relative">
-            {steps.map((step, i) => (
-              <ProcessStep key={step.title} step={step} index={i} />
-            ))}
-          </div>
-        </div>
-      </div>
-    </section>
-  );
+  const ref = useRef(null); const [active, setActive] = useState(0); const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end end'] });
+  useMotionValueEvent(scrollYProgress, 'change', (value) => { const next = Math.min(stages.length - 1, Math.floor(value * stages.length)); setActive((current) => current === next ? current : next); });
+  const stage = stages[active]; const go = (index) => { setActive(index); };
+  return <section ref={ref} id="process" className="factory-section relative overflow-hidden bg-black"><div className="relative min-h-screen overflow-hidden"><div className="factory-fog" style={{ '--factory-accent': stage.accent }} /><div className="factory-shell max-w-7xl mx-auto min-h-screen px-6 lg:px-8"><header className="factory-heading"><span>NEURALL / INTELLIGENCE FACTORY</span><h2>Watch an idea become <em>alive.</em></h2></header><div className="factory-layout"><div className="factory-stages">{stages.map((item, index) => <button type="button" onClick={() => go(index)} className={index === active ? 'active' : ''} style={{ '--factory-accent': item.accent }} key={item.id}><i>{item.number}</i><span>{item.title}</span><b>{item.glyph}</b></button>)}</div><motion.article key={stage.id} initial={{ opacity: 0, filter: 'blur(10px)', y: 14 }} animate={{ opacity: 1, filter: 'blur(0px)', y: 0 }} transition={{ duration: .38 }} className="factory-copy" style={{ '--factory-accent': stage.accent }}><span>STAGE_{stage.number}</span><h3>{stage.title}</h3><strong>{stage.label}</strong><p>{stage.detail}</p><div className="factory-status"><i /> SYSTEMS CONNECTED <b>01.000</b></div></motion.article><FactoryVisual stage={stage} /></div><div className="factory-progress"><span>{stage.number} / 06</span><i><b style={{ width: `${((active + 1) / stages.length) * 100}%`, background: stage.accent }} /></i><span>SELECT A STAGE</span></div></div></div></section>;
 }
-

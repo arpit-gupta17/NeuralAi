@@ -1,93 +1,17 @@
-import { motion } from 'framer-motion';
-import { Code2, MessageCircle, Briefcase } from 'lucide-react';
+import { useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 
 const team = [
-  { name: 'Alex Morgan', role: 'CEO & AI Lead', initials: 'AM', gradient: 'from-cyan-400 to-blue-500' },
-  { name: 'Sophia Reeves', role: 'Design Director', initials: 'SR', gradient: 'from-purple-400 to-pink-500' },
-  { name: 'Daniel Kim', role: 'Lead Engineer', initials: 'DK', gradient: 'from-emerald-400 to-cyan-500' },
-  { name: 'Layla Hassan', role: 'ML Architect', initials: 'LH', gradient: 'from-orange-400 to-red-500' },
+  { name: 'Alex Morgan', role: 'CEO & AI Lead', initials: 'AM', accent: '#00e5ff', experience: '12 years / intelligence systems', skills: ['AI Strategy', 'LLM Systems', 'Research'], project: 'Nexus Intelligence' },
+  { name: 'Sophia Reeves', role: 'Design Director', initials: 'SR', accent: '#c177ff', experience: '10 years / human interfaces', skills: ['Design Systems', 'Product UX', 'Motion'], project: 'Aether Commerce' },
+  { name: 'Daniel Kim', role: 'Lead Engineer', initials: 'DK', accent: '#54e2a4', experience: '11 years / platform engineering', skills: ['React', 'Cloud', 'Architecture'], project: 'FlowMind OS' },
+  { name: 'Layla Hassan', role: 'ML Architect', initials: 'LH', accent: '#ffad5b', experience: '9 years / applied machine learning', skills: ['Neural Nets', 'Vision', 'Automation'], project: 'Pulse Health' },
 ];
 
-const socialIcons = [
-  { Icon: Code2, href: '#' },
-  { Icon: MessageCircle, href: '#' },
-  { Icon: Briefcase, href: '#' },
-];
-
-function TeamMember({ member, index }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 40 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.3 }}
-      transition={{ duration: 0.6, delay: index * 0.1 }}
-      className="flex flex-col items-center text-center group"
-    >
-      {/* Avatar with floating animation */}
-      <motion.div
-        animate={{ y: [0, -8, 0] }}
-        transition={{ duration: 4 + index * 0.5, repeat: Infinity, ease: 'easeInOut' }}
-        className="relative mb-5"
-      >
-        <div className={`w-28 h-28 rounded-full bg-gradient-to-br ${member.gradient} flex items-center justify-center shadow-xl text-2xl font-display font-bold text-white relative z-10`}>
-          {member.initials}
-        </div>
-        {/* Glow ring */}
-        <div className={`absolute inset-0 rounded-full bg-gradient-to-br ${member.gradient} opacity-0 group-hover:opacity-40 blur-xl transition-all duration-500 scale-90`} />
-
-        {/* Social overlay */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          whileHover={{ opacity: 1, scale: 1 }}
-          className="absolute inset-0 rounded-full bg-black/70 backdrop-blur-sm flex items-center justify-center gap-3 opacity-0 group-hover:opacity-100 transition-all duration-300 z-20"
-        >
-          {socialIcons.map(({ Icon, href }, i) => (
-            <a
-              key={i}
-              href={href}
-              className="text-white/60 hover:text-white transition-colors"
-            >
-              <Icon size={15} />
-            </a>
-          ))}
-        </motion.div>
-      </motion.div>
-
-      <h3 className="font-display font-semibold text-base text-white">{member.name}</h3>
-      <p className="text-xs text-white/40 mt-1">{member.role}</p>
-    </motion.div>
-  );
-}
+function SkillConstellation({ member }) { return <div className="skill-constellation">{member.skills.map((skill, index) => <button type="button" title={skill} key={skill} style={{ '--skill-index': index, '--pod-accent': member.accent }}><i /><span>{skill}</span></button>)}<svg viewBox="0 0 200 90" aria-hidden="true"><path d="M20 55 92 18 175 48M20 55 92 70 175 48" /></svg></div>; }
+function Pod({ member, active, onSelect, index }) { return <motion.button type="button" aria-pressed={active} onClick={onSelect} style={{ '--pod-accent': member.accent }} className={`research-pod ${active ? 'research-pod--active' : ''}`} initial={{ opacity: 0, scale: .65 }} whileInView={{ opacity: 1, scale: 1 }} transition={{ delay: index * .12, type: 'spring', stiffness: 100, damping: 15 }} whileHover={{ y: -10 }}><span className="research-pod__scan" /><span className="research-pod__halo" /><span className="research-pod__avatar">{member.initials}</span><strong>{member.name}</strong><small>{member.role}</small><i className="research-pod__id">RESEARCHER_{String(index + 1).padStart(2, '0')}</i></motion.button>; }
 
 export default function Team() {
-  return (
-    <section id="team" className="relative py-24 overflow-hidden">
-      <div className="max-w-7xl mx-auto px-6 lg:px-8">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.3 }}
-          transition={{ duration: 0.7 }}
-          className="text-center mb-16"
-        >
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-pink-500/20 bg-pink-500/5 mb-4">
-            <span className="text-xs text-pink-400 tracking-wider uppercase font-medium">The Team</span>
-          </div>
-          <h2 className="font-display font-bold text-4xl sm:text-5xl text-white mb-4">
-            Meet Our <span className="text-gradient-blue-purple">Experts</span>
-          </h2>
-          <p className="text-white/50 max-w-xl mx-auto">
-            A handpicked team of world-class designers, engineers, and AI specialists united by a passion for excellence.
-          </p>
-        </motion.div>
-
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-10">
-          {team.map((member, i) => (
-            <TeamMember key={member.name} member={member} index={i} />
-          ))}
-        </div>
-      </div>
-    </section>
-  );
+  const [active, setActive] = useState(0); const member = team[active];
+  return <section id="team" className="research-lab relative min-h-[970px] overflow-hidden bg-black py-24"><div className="research-lab__grid" /><div className="research-lab__light" style={{ '--pod-accent': member.accent }} /><header className="research-lab__header relative z-10 max-w-7xl mx-auto px-6 lg:px-8"><span>NEURALL / RESEARCH CENTER</span><h2>Meet the minds <em>building next.</em></h2><p>A multidisciplinary research collective, connected by a shared intelligence core.</p></header><div className="research-room relative mx-auto max-w-6xl px-6"><svg className="research-links" viewBox="0 0 1000 520" preserveAspectRatio="none" aria-hidden="true"><path d="M500 255 195 140M500 255 805 140M500 255 195 390M500 255 805 390" /></svg><div className="research-core"><b>AI</b><span>COLLABORATION<br />CORE</span></div>{team.map((item, index) => <Pod key={item.name} member={item} index={index} active={index === active} onSelect={() => setActive(index)} />)}<AnimatePresence mode="wait"><motion.article key={member.name} initial={{ opacity: 0, filter: 'blur(10px)', y: 14 }} animate={{ opacity: 1, filter: 'blur(0px)', y: 0 }} exit={{ opacity: 0, y: -10 }} className="research-profile" style={{ '--pod-accent': member.accent }}><div className="research-profile__bar"><span>IDENTITY // VERIFIED</span><i /></div><h3>{member.name}</h3><strong>{member.role}</strong><p>{member.experience}</p><div><span>ACTIVE RESEARCH</span><b>{member.project}</b></div><SkillConstellation member={member} /></motion.article></AnimatePresence></div><div className="research-lab__footer">SELECT A POD TO OPEN RESEARCH PROFILE <i>◌</i></div></section>;
 }
-
