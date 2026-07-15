@@ -7,6 +7,7 @@ import { motion } from 'framer-motion';
 import LoadingScreen from './components/LoadingScreen';
 import CustomCursor from './components/CustomCursor';
 import Navbar from './components/Navbar';
+import NeuralField from './components/NeuralField';
 
 const Hero = lazy(() => import('./components/Hero'));
 const Expertise = lazy(() => import('./components/Expertise'));
@@ -23,11 +24,17 @@ gsap.registerPlugin(ScrollTrigger);
 
 export default function App() {
   const [siteReady, setSiteReady] = useState(false);
+  // Flips ~300ms after the loader is fully gone — this is the "pause"
+  // beat from the brief, then NeuralField's own IntroDriver takes over
+  // (pulse forms → camera pulls back → settles into the ambient loop).
+  const [neuralPlay, setNeuralPlay] = useState(false);
 
   const handleLoadComplete = useCallback(() => setSiteReady(true), []);
 
   useEffect(() => {
     if (!siteReady) return;
+
+    const pulseTimer = window.setTimeout(() => setNeuralPlay(true), 300);
 
     // Stop the browser from restoring a previous scroll position (this is
     // what was causing the page to land a little below the top / "auto
@@ -66,6 +73,7 @@ export default function App() {
     const settleAtHero = window.setTimeout(() => lenis.scrollTo(0, { immediate: true }), 900);
 
     return () => {
+      window.clearTimeout(pulseTimer);
       window.clearTimeout(settleAtHero);
       lenis.destroy();
       gsap.ticker.remove(ticker);
@@ -77,16 +85,25 @@ export default function App() {
       {/* Cinematic Loading intro */}
       <LoadingScreen onComplete={handleLoadComplete} />
 
+      {/* Mounted from the very start — not gated by siteReady — so its
+          WebGL context and shaders are already warm by the time the loader
+          fades out. It sits fully hidden behind the loader (z-index 10000)
+          until `neuralPlay` flips true, at which point its own IntroDriver
+          runs the pulse → pull-back cinematic. This is what removes the
+          "cold start" pop that made the old fade-in feel disconnected. */}
+      <NeuralField className="absolute top-0 left-0 right-0 h-[calc(100svh+45vh)] z-0" play={neuralPlay} />
+
       {/* Main site — fades in after loading screen exits */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: siteReady ? 1 : 0 }}
         transition={{ duration: 0.7, ease: 'easeOut' }}
-        className="custom-cursor-hide bg-[#050505] min-h-screen overflow-x-hidden relative"
+        className="custom-cursor-hide min-h-screen overflow-x-hidden relative"
       >
         {siteReady && <Suspense fallback={<div className="site-shell" aria-busy="true" />}>
           {/* Persistent mesh gradient background */}
           <div className="mesh-gradient-bg fixed inset-0 opacity-[0.35] pointer-events-none z-0" />
+
           <ScrollStoryEngine />
           <CustomCursor />
           <Navbar />

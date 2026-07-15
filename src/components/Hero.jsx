@@ -1,69 +1,137 @@
-import { useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { motion, useMotionValue, useSpring, AnimatePresence } from 'framer-motion';
 import { ArrowRight, Play } from 'lucide-react';
+import { textRevealDelayMs } from './NeuralField';
 
-// ─── Word-by-word blur-to-sharp reveal ───────────────────────────────────────
-function BlurWord({ word, delay, className }) {
+// ─── Words fly in from different directions and converge into place ─────────
+const DIRECTIONS = {
+  left: { x: -150, y: 0 },
+  right: { x: 150, y: 0 },
+  top: { x: 0, y: -90 },
+  bottom: { x: 0, y: 90 },
+};
+
+function DirectionalWord({ word, delay, className, from }) {
+  if (from === 'center') {
+    return (
+      <motion.span
+        className={`inline-block ${className}`}
+        initial={{ opacity: 0, scale: 0.4, filter: 'blur(14px)' }}
+        animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
+        transition={{ duration: 0.75, delay, type: 'spring', stiffness: 200, damping: 16 }}
+      >
+        {word}
+      </motion.span>
+    );
+  }
+
+  const { x, y } = DIRECTIONS[from] ?? DIRECTIONS.top;
   return (
     <motion.span
       className={`inline-block ${className}`}
-      initial={{ opacity: 0, filter: 'blur(16px)', y: 28, scale: 0.94 }}
-      animate={{ opacity: 1, filter: 'blur(0px)', y: 0, scale: 1 }}
-      transition={{ duration: 0.86, delay, type: 'spring', stiffness: 145, damping: 16 }}
+      initial={{ opacity: 0, x, y, filter: 'blur(16px)', scale: 0.94 }}
+      animate={{ opacity: 1, x: 0, y: 0, filter: 'blur(0px)', scale: 1 }}
+      transition={{ duration: 0.9, delay, type: 'spring', stiffness: 130, damping: 17 }}
     >
       {word}
     </motion.span>
   );
 }
 
-function AnimatedTitle({ started }) {
-  const line1 = ['We', 'Engineer'];
-  const line2 = ['Intelligence'];
-  const line3 = ['For', 'What’s'];
-  const line4 = ['Next.'];
+// Total time (seconds) before every word has landed — used to time the
+// shine sweep so it only plays once the headline has fully assembled.
+const TITLE_SETTLE_AT = 1.9;
 
+function TitleShine({ started }) {
+  const [play, setPlay] = useState(false);
+
+  useEffect(() => {
+    if (!started) { setPlay(false); return undefined; }
+    const t = window.setTimeout(() => setPlay(true), TITLE_SETTLE_AT * 1000);
+    return () => window.clearTimeout(t);
+  }, [started]);
+
+  return (
+    <div
+      aria-hidden="true"
+      className={`hero-title-shine font-display font-black leading-[1.04] text-5xl sm:text-6xl lg:text-7xl tracking-tight ${play ? 'hero-title-shine--play' : ''}`}
+    >
+      <span className="block">We&nbsp;Engineer</span>
+      <span className="block">Intelligence</span>
+      <span className="block">For&nbsp;What&rsquo;s</span>
+      <span className="block">Next.</span>
+      <style>{`
+        .hero-title-shine {
+          position: absolute;
+          inset: 0;
+          pointer-events: none;
+          background: linear-gradient(
+            100deg,
+            transparent 40%,
+            rgba(255,255,255,0.85) 48%,
+            rgba(140,225,255,0.95) 50%,
+            rgba(255,255,255,0.85) 52%,
+            transparent 60%
+          );
+          background-size: 300% 100%;
+          background-position: 150% 0;
+          -webkit-background-clip: text;
+          background-clip: text;
+          color: transparent;
+        }
+        .hero-title-shine--play {
+          animation: hero-title-shine-sweep 1.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        @keyframes hero-title-shine-sweep {
+          to { background-position: -100% 0; }
+        }
+      `}</style>
+    </div>
+  );
+}
+
+function AnimatedTitle({ started }) {
   if (!started) return null;
 
   return (
-    <h1 className="font-display font-black leading-[1.04] text-5xl sm:text-6xl lg:text-7xl text-white tracking-tight">
-      {/* Line 1 */}
-      <span className="block">
-        {line1.map((w, i) => (
-          <BlurWord key={w} word={w + '\u00A0'} delay={0.1 + i * 0.12} />
-        ))}
-      </span>
+    <div className="relative">
+      <h1 className="font-display font-black leading-[1.04] text-5xl sm:text-6xl lg:text-7xl text-white tracking-tight">
+        {/* Line 1 */}
+        <span className="block">
+          <DirectionalWord word={'We\u00A0'} delay={0.1} from="left" />
+          <DirectionalWord word={'Engineer'} delay={0.24} from="right" />
+        </span>
 
-      {/* Line 2 – gradient */}
-      <span className="block">
-        {line2.map((w, i) => (
-          <BlurWord
-            key={w}
-            word={w}
-            delay={0.35 + i * 0.12}
+        {/* Line 2 – gradient, dramatic drop from above */}
+        <span className="block">
+          <DirectionalWord
+            word="Intelligence"
+            delay={0.42}
+            from="top"
             className="text-gradient-blue-purple bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-500"
           />
-        ))}
-      </span>
+        </span>
 
-      {/* Line 3 */}
-      <span className="block">
-        {line3.map((w, i) => (
-          <BlurWord key={w} word={w + '\u00A0'} delay={0.56 + i * 0.12} />
-        ))}
-      </span>
+        {/* Line 3 */}
+        <span className="block">
+          <DirectionalWord word={'For\u00A0'} delay={0.66} from="bottom" />
+          <DirectionalWord word={'What\u2019s'} delay={0.8} from="left" />
+        </span>
 
-      {/* Line 4 – silver */}
-      <span className="block">
-        {line4.map((w, i) => (
-          <BlurWord
-            key={w}
-            word={w}
-            delay={0.84 + i * 0.12}
+        {/* Line 4 – silver, lands last with a punch */}
+        <span className="block">
+          <DirectionalWord
+            word="Next."
+            delay={1.02}
+            from="center"
             className="text-gradient-silver bg-clip-text text-transparent bg-gradient-to-r from-white via-zinc-300 to-zinc-500"
           />
-        ))}
-      </span>
-    </h1>
+        </span>
+      </h1>
+
+      {/* Shine flare — plays once, after every word has landed */}
+      <TitleShine started={started} />
+    </div>
   );
 }
 
@@ -122,13 +190,30 @@ function LightSweep({ started }) {
 
 // ─── Main Hero ────────────────────────────────────────────────────────────────
 export default function Hero({ started }) {
+  // The headline waits for NeuralField's quick fade-in to start (see
+  // textRevealDelayMs / NEURAL_TIMING in NeuralField.jsx) — LoadingScreen
+  // already carried the "birth" narrative, so this is just a short beat,
+  // not a second countdown.
+  const [showContent, setShowContent] = useState(false);
+
+  useEffect(() => {
+    if (!started) { setShowContent(false); return undefined; }
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const t = window.setTimeout(() => setShowContent(true), textRevealDelayMs(prefersReducedMotion));
+    return () => window.clearTimeout(t);
+  }, [started]);
+
   return (
     <section
       id="home"
-      className="hero-cinematic relative h-[100svh] flex items-center overflow-hidden bg-[#03050d]"
+      className="hero-cinematic relative h-[100svh] flex items-center overflow-hidden bg-transparent"
     >
       <div className="hero-light-field absolute inset-0 pointer-events-none z-0" aria-hidden="true"><i /><i /><i /><span /></div>
       <div className="hero-vignette absolute inset-0 pointer-events-none z-[1]" />
+
+      {/* NeuralField (mounted in App.jsx, behind this section) handles the
+          birth → pull-back → ribbon-field sequence — this section only
+          needs to keep its own background transparent so that shows through. */}
 
       {/* ── Light sweep ─────────────────────────────── */}
       <LightSweep started={started} />
@@ -142,7 +227,7 @@ export default function Hero({ started }) {
 
             {/* Badge */}
             <AnimatePresence>
-              {started && (
+              {showContent && (
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -158,15 +243,15 @@ export default function Hero({ started }) {
             </AnimatePresence>
 
             {/* Word-by-word title */}
-            <AnimatedTitle started={started} />
+            <AnimatedTitle started={showContent} />
 
             {/* Subtitle */}
             <AnimatePresence>
-              {started && (
+              {showContent && (
                 <motion.p
                   initial={{ opacity: 0, y: 22 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.9, delay: 1.1, ease: [0.16, 1, 0.3, 1] }}
+                  transition={{ duration: 0.9, delay: 2.2, ease: [0.16, 1, 0.3, 1] }}
                   className="text-base sm:text-lg text-white/50 leading-relaxed max-w-lg font-light"
                 >
                   Neurall builds intelligent products, high-performance software, and digital systems
@@ -177,11 +262,11 @@ export default function Hero({ started }) {
 
             {/* CTAs */}
             <AnimatePresence>
-              {started && (
+              {showContent && (
                 <motion.div
                   initial={{ opacity: 0, scale: 0.88 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.8, delay: 1.4, type: 'spring', stiffness: 180, damping: 18 }}
+                  transition={{ duration: 0.8, delay: 2.5, type: 'spring', stiffness: 180, damping: 18 }}
                   className="flex flex-wrap gap-5 mt-2"
                 >
                   <MagneticButton isPrimary
@@ -205,11 +290,11 @@ export default function Hero({ started }) {
 
             {/* Stats */}
             <AnimatePresence>
-              {started && (
+              {showContent && (
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  transition={{ duration: 1, delay: 1.7 }}
+                  transition={{ duration: 1, delay: 2.8 }}
                   className="flex gap-10 mt-6 pt-6 border-t border-white/5"
                 >
                   {[['★★★★★', 'Trusted by startups'], ['100+', 'Projects built'], ['98%', 'Client satisfaction']].map(([n, l]) => (
@@ -228,11 +313,11 @@ export default function Hero({ started }) {
 
       {/* Scroll indicator */}
       <AnimatePresence>
-        {started && (
+        {showContent && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 0.4 }}
-            transition={{ delay: 2.4 }}
+            transition={{ delay: 3.3 }}
             className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
           >
             <span className="text-xs font-mono text-white/30 tracking-widest uppercase">Scroll</span>
